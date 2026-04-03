@@ -1,1 +1,1410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TKXPORT â Maritime Operations Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0a0e1a;
+  --paper: #f0ede6;
+  --ocean: #0d3b5e;
+  --teal: #1a7a6e;
+  --amber: #d4820a;
+  --rust: #c44b2b;
+  --mist: #e8e4dc;
+  --steel: #4a6072;
+  --light-ocean: #e8f2f9;
+  --mono: 'DM Mono', monospace;
+  --display: 'Syne', sans-serif;
+  --serif: 'Fraunces', serif;
+}
 
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--display);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* âââ TOPBAR âââ */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  height: 56px;
+  background: var(--ink);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.logo {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  color: var(--paper);
+  text-transform: uppercase;
+}
+.logo span { color: var(--amber); }
+.topbar-right {
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: rgba(26,122,110,0.12);
+  border: 1px solid rgba(26,122,110,0.3);
+  padding: 3px 10px;
+  border-radius: 2px;
+}
+.time-display {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: rgba(240,237,230,0.5);
+  letter-spacing: 0.05em;
+}
+
+/* âââ LAYOUT âââ */
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 56px 1fr;
+  min-height: 100vh;
+}
+
+/* âââ SIDEBAR âââ */
+.sidebar {
+  grid-row: 2;
+  background: var(--ink);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 2rem 0;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+.nav-section {
+  margin-bottom: 2rem;
+}
+.nav-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(240,237,230,0.3);
+  padding: 0 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(240,237,230,0.55);
+  letter-spacing: 0.03em;
+  border-left: 2px solid transparent;
+  text-decoration: none;
+}
+.nav-item:hover { color: var(--paper); background: rgba(255,255,255,0.04); }
+.nav-item.active {
+  color: var(--amber);
+  border-left-color: var(--amber);
+  background: rgba(212,130,10,0.08);
+}
+.nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+/* âââ MAIN âââ */
+.main {
+  grid-row: 2;
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+/* âââ PANELS âââ */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* âââ PAGE HEADER âââ */
+.page-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(10,14,26,0.1);
+  padding-bottom: 1.5rem;
+}
+.page-title {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.page-subtitle {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--steel);
+  letter-spacing: 0.06em;
+  margin-top: 0.4rem;
+  text-transform: uppercase;
+}
+
+/* âââ KPI ROW âââ */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.kpi-card {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 1.25rem 1.5rem;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--amber);
+}
+.kpi-card.green::before { background: var(--teal); }
+.kpi-card.blue::before { background: #3a8fd4; }
+.kpi-card.red::before { background: var(--rust); }
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(240,237,230,0.45);
+  margin-bottom: 0.5rem;
+}
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.kpi-delta {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  margin-top: 0.4rem;
+  color: var(--teal);
+}
+.kpi-delta.neg { color: var(--rust); }
+
+/* âââ CARDS âââ */
+.card {
+  background: white;
+  border: 1px solid rgba(10,14,26,0.08);
+  border-radius: 4px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.card-title {
+  font-family: var(--display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.card-badge {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.badge-live { background: rgba(26,122,110,0.12); color: var(--teal); border: 1px solid rgba(26,122,110,0.25); }
+.badge-free { background: rgba(212,130,10,0.1); color: var(--amber); border: 1px solid rgba(212,130,10,0.25); }
+.badge-api { background: rgba(58,143,212,0.1); color: #3a8fd4; border: 1px solid rgba(58,143,212,0.25); }
+
+/* âââ GRID LAYOUTS âââ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+/* âââ FREIGHT TABLE âââ */
+.freight-table { width: 100%; border-collapse: collapse; }
+.freight-table th {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--steel);
+  padding: 0.5rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--mist);
+}
+.freight-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  border-bottom: 1px solid var(--mist);
+}
+.freight-table tr:hover td { background: var(--light-ocean); }
+.rate-value { font-family: var(--mono); font-weight: 500; color: var(--ocean); }
+.trend-up { color: var(--rust); }
+.trend-down { color: var(--teal); }
+.trend-flat { color: var(--steel); }
+
+/* âââ ROUTE BADGE âââ */
+.route-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ocean);
+}
+
+/* âââ TRACKING FORM âââ */
+.track-form {
+  display: flex; gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.track-input {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid rgba(10,14,26,0.15);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.track-input:focus { border-color: var(--ocean); }
+.select-input {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid rgba(10,14,26,0.15);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+}
+.btn-primary {
+  font-family: var(--display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  background: var(--ocean);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-primary:hover { background: var(--teal); }
+.btn-secondary {
+  font-family: var(--display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.2rem;
+  background: transparent;
+  color: var(--ocean);
+  border: 1.5px solid var(--ocean);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-secondary:hover { background: var(--ocean); color: white; }
+
+/* âââ SHIPMENT CARD âââ */
+.shipment-card {
+  border: 1px solid rgba(10,14,26,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  transition: box-shadow 0.15s;
+}
+.shipment-card:hover { box-shadow: 0 4px 16px rgba(10,14,26,0.08); }
+.shipment-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+.shipment-ref {
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.shipment-carrier { font-size: 0.78rem; color: rgba(240,237,230,0.6); margin-top: 2px; }
+.status-pill {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.status-transit { background: rgba(58,143,212,0.2); color: #7dbfe8; border: 1px solid rgba(58,143,212,0.3); }
+.status-arrived { background: rgba(26,122,110,0.2); color: #5bc4b4; border: 1px solid rgba(26,122,110,0.3); }
+.status-customs { background: rgba(212,130,10,0.2); color: #e8a84a; border: 1px solid rgba(212,130,10,0.3); }
+.status-delayed { background: rgba(196,75,43,0.2); color: #e88066; border: 1px solid rgba(196,75,43,0.3); }
+.shipment-body { padding: 1rem 1.25rem; background: white; }
+
+/* âââ TIMELINE âââ */
+.timeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0.75rem 0;
+  position: relative;
+}
+.tl-node {
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1;
+  position: relative;
+}
+.tl-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--mist);
+  border: 2px solid var(--steel);
+  z-index: 1;
+  position: relative;
+}
+.tl-dot.done { background: var(--teal); border-color: var(--teal); }
+.tl-dot.current { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 0 4px rgba(212,130,10,0.2); }
+.tl-line {
+  flex: 1;
+  height: 2px;
+  background: var(--mist);
+  margin-top: -6px;
+  position: relative;
+}
+.tl-line.done { background: var(--teal); }
+.tl-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--steel);
+  margin-top: 6px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.tl-label.current { color: var(--amber); font-weight: 500; }
+
+/* âââ MAP SECTION âââ */
+.map-container {
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(10,14,26,0.1);
+}
+.map-container iframe {
+  display: block;
+  width: 100%;
+  border: none;
+}
+
+/* âââ INDEX RATES âââ */
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.index-card {
+  padding: 1rem;
+  border: 1px solid rgba(10,14,26,0.08);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.index-card:hover { border-color: var(--ocean); }
+.index-card.selected { border-color: var(--ocean); background: var(--light-ocean); }
+.index-route {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--steel);
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+.index-rate {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--ocean);
+  letter-spacing: -0.03em;
+}
+.index-unit { font-size: 0.7rem; color: var(--steel); font-weight: 400; }
+.index-change {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  margin-top: 0.3rem;
+}
+.up { color: var(--rust); }
+.down { color: var(--teal); }
+
+/* âââ DOCUMENT âââ */
+.doc-list { }
+.doc-item {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(10,14,26,0.08);
+  border-radius: 3px;
+  margin-bottom: 0.6rem;
+  background: white;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.doc-item:hover { border-color: var(--ocean); background: var(--light-ocean); }
+.doc-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 3px;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.doc-icon.pdf { background: rgba(196,75,43,0.1); }
+.doc-icon.img { background: rgba(26,122,110,0.1); }
+.doc-meta { flex: 1; }
+.doc-name { font-size: 0.85rem; font-weight: 600; }
+.doc-info { font-family: var(--mono); font-size: 0.65rem; color: var(--steel); margin-top: 2px; }
+.doc-actions { display: flex; gap: 0.5rem; }
+
+/* âââ ALERT BOX âââ */
+.alert {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 3px;
+  margin-bottom: 0.75rem;
+  font-size: 0.82rem;
+}
+.alert-warn { background: rgba(212,130,10,0.08); border: 1px solid rgba(212,130,10,0.2); }
+.alert-info { background: rgba(58,143,212,0.08); border: 1px solid rgba(58,143,212,0.2); color: var(--ocean); }
+.alert-success { background: rgba(26,122,110,0.08); border: 1px solid rgba(26,122,110,0.2); color: var(--teal); }
+.alert-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
+
+/* âââ LOADING SKELETON âââ */
+.skeleton {
+  background: linear-gradient(90deg, var(--mist) 25%, #e0ddd6 50%, var(--mist) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 3px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* âââ FOOTER INFO âââ */
+.data-source {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--steel);
+  letter-spacing: 0.06em;
+  margin-top: 0.75rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.ds-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+
+/* âââ MODAL OVERLAY âââ */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,14,26,0.7);
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--paper);
+  border-radius: 6px;
+  padding: 2rem;
+  max-width: 520px;
+  width: 90%;
+  box-shadow: 0 24px 64px rgba(10,14,26,0.3);
+}
+.modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+.modal-sub { font-family: var(--mono); font-size: 0.68rem; color: var(--steel); margin-bottom: 1.5rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.modal-form { display: flex; flex-direction: column; gap: 0.85rem; }
+.form-label { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel); margin-bottom: 0.3rem; display: block; }
+.form-input {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid rgba(10,14,26,0.15);
+  border-radius: 3px;
+  background: white;
+  color: var(--ink);
+  outline: none;
+}
+.form-input:focus { border-color: var(--ocean); }
+.modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem; }
+.btn-close {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--steel);
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+}
+
+/* âââ RORO SECTION âââ */
+.roro-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(10,14,26,0.08);
+  border-radius: 4px;
+  background: white;
+  margin-bottom: 0.75rem;
+}
+.roro-flag { font-size: 1.5rem; }
+.roro-info .roro-route { font-weight: 700; font-size: 0.88rem; }
+.roro-info .roro-vessel { font-family: var(--mono); font-size: 0.68rem; color: var(--steel); margin-top: 2px; letter-spacing: 0.04em; }
+.roro-eta { text-align: right; }
+.roro-eta-value { font-family: var(--mono); font-size: 0.82rem; font-weight: 500; color: var(--ocean); }
+.roro-eta-label { font-family: var(--mono); font-size: 0.58rem; color: var(--steel); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* âââ SCROLLBAR âââ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(10,14,26,0.2); border-radius: 2px; }
+
+/* âââ RESPONSIVE âââ */
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .kpi-row { grid-template-columns: repeat(2,1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .index-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">TKX<span>PORT</span> <span style="color:rgba(240,237,230,0.3);font-weight:400;font-size:0.9rem;margin-left:0.5rem;">Maritime Ops</span></div>
+  <div class="topbar-right">
+    <span class="tag">â LIVE DATA</span>
+    <span class="time-display" id="clock">--:-- UTC</span>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="shell" style="padding-top:56px">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+      <a class="nav-item active" onclick="showPanel('dashboard')"><span class="nav-icon">â</span>Dashboard</a>
+      <a class="nav-item" onclick="showPanel('tracking')"><span class="nav-icon">â</span>Container Tracking</a>
+      <a class="nav-item" onclick="showPanel('roro')"><span class="nav-icon">â</span>RoRo Shipments</a>
+      <a class="nav-item" onclick="showPanel('vessels')"><span class="nav-icon">â</span>Vessel Map</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Market</div>
+      <a class="nav-item" onclick="showPanel('rates')"><span class="nav-icon">â</span>Freight Rates</a>
+      <a class="nav-item" onclick="showPanel('routes')"><span class="nav-icon">â</span>Routes Afrique</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Documents</div>
+      <a class="nav-item" onclick="showPanel('documents')"><span class="nav-icon">â¤</span>Documents</a>
+      <a class="nav-item" onclick="showPanel('alerts')"><span class="nav-icon">â¬</span>Alertes</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Config</div>
+      <a class="nav-item" onclick="showPanel('apikeys')"><span class="nav-icon">â¿</span>ClÃ©s API</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ââââââââââââââââââââââââââââââââââ DASHBOARD ââ -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Vue opÃ©rationnelle â Corridor Dubai / Afrique Sub-Saharienne</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Conteneurs en transit</div>
+          <div class="kpi-value" id="kpi-containers">â</div>
+          <div class="kpi-delta" id="kpi-containers-d">Chargementâ¦</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">FBX Index Global</div>
+          <div class="kpi-value" id="kpi-fbx">â</div>
+          <div class="kpi-delta" id="kpi-fbx-d">Source : Freightos FBX</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Navires actifs suivis</div>
+          <div class="kpi-value" id="kpi-vessels">â</div>
+          <div class="kpi-delta">Via MarineTraffic AIS</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Alertes actives</div>
+          <div class="kpi-value" id="kpi-alerts">2</div>
+          <div class="kpi-delta neg">Retard Libreville, douane Pointe-Noire</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Active Shipments -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">ExpÃ©ditions actives</div>
+            <span class="card-badge badge-live">â Live</span>
+          </div>
+
+          <div class="shipment-card">
+            <div class="shipment-header">
+              <div>
+                <div class="shipment-ref">MSKU7421384</div>
+                <div class="shipment-carrier">MSC / Jebel Ali â Libreville</div>
+              </div>
+              <span class="status-pill status-transit">En transit</span>
+            </div>
+            <div class="shipment-body">
+              <div class="timeline">
+                <div class="tl-node"><div class="tl-dot done"></div><div class="tl-label">Jebel Ali</div></div>
+                <div class="tl-line done"></div>
+                <div class="tl-node"><div class="tl-dot done"></div><div class="tl-label">Port SaÃ¯d</div></div>
+                <div class="tl-line done"></div>
+                <div class="tl-node"><div class="tl-dot current"></div><div class="tl-label current">Dakar</div></div>
+                <div class="tl-line"></div>
+                <div class="tl-node"><div class="tl-dot"></div><div class="tl-label">Libreville</div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:0.5rem;">
+                <span style="font-family:var(--mono);font-size:0.68rem;color:var(--steel)">ETA : <strong style="color:var(--ink)">14 avr. 2026</strong></span>
+                <span style="font-family:var(--mono);font-size:0.68rem;color:var(--steel)">40HC â Dry</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="shipment-card">
+            <div class="shipment-header">
+              <div>
+                <div class="shipment-ref">CMAU3387612</div>
+                <div class="shipment-carrier">CMA CGM / Anvers â Mombasa</div>
+              </div>
+              <span class="status-pill status-customs">DÃ©douanement</span>
+            </div>
+            <div class="shipment-body">
+              <div class="timeline">
+                <div class="tl-node"><div class="tl-dot done"></div><div class="tl-label">Anvers</div></div>
+                <div class="tl-line done"></div>
+                <div class="tl-node"><div class="tl-dot done"></div><div class="tl-label">AlgÃ©siras</div></div>
+                <div class="tl-line done"></div>
+                <div class="tl-node"><div class="tl-dot done"></div><div class="tl-label">Port SaÃ¯d</div></div>
+                <div class="tl-line done"></div>
+                <div class="tl-node"><div class="tl-dot current"></div><div class="tl-label current">Mombasa</div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:0.5rem;">
+                <span style="font-family:var(--mono);font-size:0.68rem;color:var(--amber)">â  Retard douane +3j</span>
+                <span style="font-family:var(--mono);font-size:0.68rem;color:var(--steel)">20FT â Dry</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="shipment-card">
+            <div class="shipment-header">
+              <div>
+                <div class="shipment-ref">OOLU4589023</div>
+                <div class="shipment-carrier">ONE / Jebel Ali â Pointe-Noire</div>
+              </div>
+              <span class="status-pill status-arrived">ArrivÃ©</span>
+            </div>
+            <div class="shipment-body">
+              <div style="font-family:var(--mono);font-size:0.72rem;color:var(--teal)">â DÃ©chargÃ© le 29 mars 2026 â PrÃªt enlÃ¨vement</div>
+              <div style="font-family:var(--mono);font-size:0.68rem;color:var(--steel);margin-top:0.3rem">DÃ©murrage gratuit expire : 5 avr. 2026</div>
+            </div>
+          </div>
+
+          <button class="btn-secondary" style="width:100%;margin-top:0.5rem" onclick="showPanel('tracking')">+ Ajouter un tracking</button>
+        </div>
+
+        <!-- Alerts + Quick FBX -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Alertes opÃ©rationnelles</div>
+              <span class="card-badge badge-live" style="background:rgba(196,75,43,0.1);color:var(--rust);border-color:rgba(196,75,43,0.25)">2 actives</span>
+            </div>
+            <div class="alert alert-warn">
+              <span class="alert-icon">â </span>
+              <div><strong>CMAU3387612</strong> â Retard douane Mombasa estimÃ© +72h. Risque de dÃ©murrage Ã  partir du 6 avr.</div>
+            </div>
+            <div class="alert alert-warn">
+              <span class="alert-icon">â </span>
+              <div><strong>OOLU4589023</strong> â DÃ©murrage gratuit expire dans <strong>5 jours</strong>. Action requise.</div>
+            </div>
+            <div class="alert alert-info">
+              <span class="alert-icon">â¹</span>
+              <div>Route Jebel Ali â Libreville : congestion port de Dakar signalÃ©e. DÃ©lai estimÃ© +2 jours.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">FBX â Indice Spot Global</div>
+              <span class="card-badge badge-free">Gratuit</span>
+            </div>
+            <div id="fbx-mini-loading" style="display:flex;gap:0.5rem;flex-direction:column">
+              <div class="skeleton" style="height:18px;width:70%"></div>
+              <div class="skeleton" style="height:14px;width:50%"></div>
+              <div class="skeleton" style="height:14px;width:60%"></div>
+            </div>
+            <div id="fbx-mini-data" style="display:none">
+              <table class="freight-table" style="font-size:0.78rem">
+                <thead><tr><th>Route</th><th>$/FEU</th><th>Var. sem.</th></tr></thead>
+                <tbody id="fbx-mini-tbody"></tbody>
+              </table>
+              <div class="data-source"><div class="ds-dot"></div>Source : Freightos Baltic Index (FBX) â donnÃ©es publiques</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ââââââââââââââââââââââââââââââââââ TRACKING ââ -->
+    <div class="panel" id="panel-tracking">
+      <div class="page-header">
+        <div class="page-title">Container Tracking</div>
+        <div class="page-subtitle">Recherche par numÃ©ro de conteneur, B/L ou booking â 160+ compagnies</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Tracker un conteneur</div>
+          <span class="card-badge badge-api">Shipsgo API</span>
+        </div>
+        <div class="track-form">
+          <input class="track-input" id="track-number" type="text" placeholder="Ex: MSKU7421384 ou BL: MEDUGW123456" maxlength="20">
+          <select class="select-input" id="track-type">
+            <option value="container">NÂ° Conteneur</option>
+            <option value="bl">Bill of Lading</option>
+            <option value="booking">Booking</option>
+          </select>
+          <button class="btn-primary" onclick="doTrack()">Tracker</button>
+        </div>
+        <div id="track-result"></div>
+        <div class="alert alert-info" style="margin-top:0.5rem">
+          <span class="alert-icon">â¹</span>
+          <div>Le tracking live nÃ©cessite une clÃ© API Shipsgo (3 trackings offerts Ã  l'inscription). <a href="https://shipsgo.com" target="_blank" style="color:var(--ocean)">S'inscrire gratuitement â</a></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Mes conteneurs suivis</div>
+          <button class="btn-secondary" onclick="document.getElementById('modal-add-container').classList.add('open')">+ Ajouter</button>
+        </div>
+        <table class="freight-table">
+          <thead>
+            <tr>
+              <th>RÃ©fÃ©rence</th>
+              <th>Compagnie</th>
+              <th>Origine â Destination</th>
+              <th>ETA</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="containers-tbody">
+            <tr>
+              <td><span class="rate-value">MSKU7421384</span></td>
+              <td>MSC</td>
+              <td class="route-badge">ð¦ðª Jebel Ali â ð¬ð¦ Libreville</td>
+              <td><span class="rate-value">14 avr. 2026</span></td>
+              <td><span class="status-pill status-transit">En transit</span></td>
+              <td><button class="btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.7rem" onclick="showPanel('tracking')">DÃ©tail</button></td>
+            </tr>
+            <tr>
+              <td><span class="rate-value">CMAU3387612</span></td>
+              <td>CMA CGM</td>
+              <td class="route-badge">ð§ðª Anvers â ð°ðª Mombasa</td>
+              <td><span class="rate-value">30 mar. 2026</span></td>
+              <td><span class="status-pill status-customs">DÃ©douanement</span></td>
+              <td><button class="btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.7rem">DÃ©tail</button></td>
+            </tr>
+            <tr>
+              <td><span class="rate-value">OOLU4589023</span></td>
+              <td>ONE</td>
+              <td class="route-badge">ð¦ðª Jebel Ali â ð¨ð¬ Pte-Noire</td>
+              <td><span class="rate-value">29 mar. 2026</span></td>
+              <td><span class="status-pill status-arrived">ArrivÃ©</span></td>
+              <td><button class="btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.7rem">DÃ©tail</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="data-source" style="margin-top:1rem"><div class="ds-dot"></div>DonnÃ©es de dÃ©monstration â Connecter Shipsgo API pour donnÃ©es temps rÃ©el</div>
+      </div>
+    </div>
+
+    <!-- ââââââââââââââââââââââââââââââââââ RORO ââ -->
+    <div class="panel" id="panel-roro">
+      <div class="page-header">
+        <div class="page-title">RoRo Shipments</div>
+        <div class="page-subtitle">Fret roulant â VÃ©hicules & Ã©quipements â Corridor Golfe / Afrique</div>
+      </div>
+
+      <div class="alert alert-warn" style="margin-bottom:1.5rem">
+        <span class="alert-icon">â </span>
+        <div><strong>Rappel :</strong> Aucune API publique ne fournit des tarifs RoRo temps rÃ©el (Wallenius, EUKOR, MOL). Les estimations ci-dessous sont basÃ©es sur les derniÃ¨res cotations manuelles et l'index Baltic Dry.</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">ExpÃ©ditions RoRo actives</div>
+            <span class="card-badge badge-live">â Suivi manuel</span>
+          </div>
+
+          <div class="roro-card">
+            <div class="roro-flag">ð</div>
+            <div class="roro-info">
+              <div class="roro-route">Jebel Ali â Libreville</div>
+              <div class="roro-vessel">MV EDUTKOR CAR CARRIER 7 Â· 12 unitÃ©s ASHOK LEYLAND</div>
+            </div>
+            <div class="roro-eta">
+              <div class="roro-eta-value">22 avr.</div>
+              <div class="roro-eta-label">ETA estimÃ©e</div>
+            </div>
+          </div>
+
+          <div class="roro-card">
+            <div class="roro-flag">ðýØ¯ø(ñ¥Ø±ÍÌôÉ½É¼µ¥¹¼ø(ñ¥Ø±ÍÌôÉ½É¼µÉ½ÕÑù¹ÙÉÌH5½µÍð½¥Øø(ñ¥Ø±ÍÌôÉ½É¼µÙÍÍ°ù5X5=I9%9
+=9
+IP
+ÜàÕ¹¥Ó¥ÌÑÉÑÕÉÌð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌôÉ½É¼µÑø(ñ¥Ø±ÍÌôÉ½É¼µÑµÙ±ÕøÔµ¤ð½¥Øø(ñ¥Ø±ÍÌôÉ½É¼µÑµ±°ùQÍÑ¥·¥ð½¥Øø(ð½¥Øø(ð½¥Øø((ñÕÑÑ½¸±ÍÌôÑ¸µÍ½¹ÉäÍÑå±ôÝ¥Ñ èÄÀÀíµÉ¥¸µÑ½ÀèÀ¸ÜÕÉ´½¹±¥¬ô½Õµ¹Ð¹Ñ±µ¹Ñ	å% µ½°µµÉ½É¼¤¹±ÍÍ1¥ÍÐ¹ ½Á¸¤ø¬9½ÕÙ±±áÃ¥¥Ñ¥½¸I½I¼ð½ÕÑÑ½¸ø(ð½¥Øø((ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èø(ñ¥Ø±ÍÌôÉµÑ¥Ñ±ùQÉ¥ÌI½I¼ÍÑ¥µÑ¥Ìð½¥Øø(ñÍÁ¸±ÍÌôÉµµÉù5¹Õ°ð½ÍÁ¸ø(ð½¥Øø(ñÑ±±ÍÌôÉ¥¡ÐµÑ±ø(ñÑ¡ø(ñÑÈøñÑ ùI½ÕÑð½Ñ øñÑ ùQåÁÛ¥¡¥Õ±ð½Ñ øñÑ ø½Õ¹¥Ó¤ð½Ñ øñÑ ùQÉ¹Í¥Ðð½Ñ øð½ÑÈø(ð½Ñ¡ø(ñÑ½äø(ñÑÈø(ñÑ±ÍÌôÉ½ÕÑµù)°±¤H1¥ÉÙ¥±±ð½Ñø(ñÑù	ÕÌÄÅ´ð½Ñø(ñÑ±ÍÌôÉÑµÙ±ÕøÄàÔÀð½Ñø(ñÑøñÍÁ¸ÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÜÉÉ´øÈá¨ð½ÍÁ¸øð½Ñø(ð½ÑÈø(ñÑÈø(ñÑ±ÍÌôÉ½ÕÑµù)°±¤H1¥ÉÙ¥±±ð½Ñø(ñÑøÑàÐA¥¬µÕÀð½Ñø(ñÑ±ÍÌôÉÑµÙ±ÕøäÈÀð½Ñø(ñÑøñÍÁ¸ÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÜÉÉ´øÈá¨ð½ÍÁ¸øð½Ñø(ð½ÑÈø(ñÑÈø(ñÑ±ÍÌôÉ½ÕÑµù¹ÙÉÌH5½µÍð½Ñø(ñÑù	ÕÌÄÉ´ð½Ñø(ñÑ±ÍÌôÉÑµÙ±ÕøÈÈÀÀð½Ñø(ñÑøñÍÁ¸ÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÜÉÉ´øÈÅ¨ð½ÍÁ¸øð½Ñø(ð½ÑÈø(ñÑÈø(ñÑ±ÍÌôÉ½ÕÑµù)°±¤HA½¥¹Ñµ9½¥Éð½Ñø(ñÑù	ÕÌÄÅ´ð½Ñø(ñÑ±ÍÌôÉÑµÙ±ÕøÄäÔÀð½Ñø(ñÑøñÍÁ¸ÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÜÉÉ´øÌÁ¨ð½ÍÁ¸øð½Ñø(ð½ÑÈø(ð½Ñ½äø(ð½Ñ±ø(ñ¥Ø±ÍÌôÑµÍ½ÕÉøñ¥Ø±ÍÌôÌµ½ÐÍÑå±ô­É½Õ¹éÙÈ ´µµÈ¤øð½¥Øù
+½ÑÑ¥½¹Ìµ¹Õ±±ÌPÉ¹§¡Éµ¥Í©½ÕÈèÄÙÈ¸ÈÀÈØð½¥Øø(ð½¥Øø(ð½¥Øø(ð½¥Øø((ð´´VCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCV@YMM1LVCV@´´ø(ñ¥Ø±ÍÌôÁ¹°¥ôÁ¹°µÙÍÍ±Ìø(ñ¥Ø±ÍÌôÁµ¡Èø(ñ¥Ø±ÍÌôÁµÑ¥Ñ±ùYÍÍ°5Àð½¥Øø(ñ¥Ø±ÍÌôÁµÍÕÑ¥Ñ±ù%L¸ÑµÁÌË¥°P5É¥¹QÉ¥µ¡ÉÑÕ¥Ð°³¥¡Éµ¹Ð¥¥Ë¤¤ð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èø(ñ¥Ø±ÍÌôÉµÑ¥Ñ±ù
+ÉÑ%LPÉ¥ÅÕ=¥¸%¹¥¸ð½¥Øø(ñÍÁ¸±ÍÌôÉµµÉù5É¥¹QÉ¥Éð½ÍÁ¸ø(ð½¥Øø(ñ¥Ø±ÍÌôµÀµ½¹Ñ¥¹Èø(ñ¥Éµ(ÍÉô¡ÑÑÁÌè¼½ÝÝÜ¹µÉ¥¹ÑÉ¥¹½´½¸½¥Ì½µ½é½½´èÐ½¹ÑÉäè´È½¹ÑÉàèÌÀ½µÁÑåÁèÐ½Í¡½Ý¹µÌéÑÉÕ½µµÍ¤èÀ½Í¡¥Á¥èÀ½±Ðè½±Ñ}¥è½ÙÑåÁÌè½Í¡½Ýµ¹Ôè½ÉµµÈé±Í(¡¥¡ÐôÔÈÀ(Ñ¥Ñ±ô5É¥¹QÉ¥%L5À(±±½ÝÕ±±ÍÉ¸ø(ð½¥Éµø(ð½¥Øø(ñ¥Ø±ÍÌôÑµÍ½ÕÉøñ¥Ø±ÍÌôÌµ½Ðøð½¥ØùM½ÕÉè5É¥¹QÉ¥¹½´P%LÁ½Í¥Ñ¥½¹Ì¡¥¥Ë¤È´Ù ÍÕÈÁ±¸ÉÑÕ¥Ð¤¸ñ¡Éô¡ÑÑÁÌè¼½ÝÝÜ¹µÉ¥¹ÑÉ¥¹½´ÑÉÐô}±¹¬ÍÑå±ô½±½ÈéÙÈ ´µ½¸¤ùY½¥È¸Á±¥¸¥É¸Hð½øð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉ¥´ÌÍÑå±ôµÉ¥¸µÑ½ÀèÄ¸ÕÉ´ø(ñ¥Ø±ÍÌôÉÍÑå±ôÁ¥¹èÅÉ´ø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÙÉ´í½±½ÈéÙÈ ´µÍÑ°¤íÑáÐµÑÉ¹Í½É´éÕÁÁÉÍí±ÑÑÈµÍÁ¥¹èÀ¸Å´íµÉ¥¸µ½ÑÑ½´èÀ¸ÕÉ´ù5M5MQI4ð½¥Øø(ñ¥ØÍÑå±ô½¹ÐµÝ¥¡ÐèÜÀÀí½¹ÐµÍ¥éèÀ¸àáÉ´ù)°±¤H1¥ÉÙ¥±±ð½¥Øø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÝÉ´í½±½ÈéÙÈ ´µÑ°¤íµÉ¥¸µÑ½ÀèÀ¸ÑÉ´ù
+ÀèÈÌã
+À
+ÜY¥ÑÍÍèÄÐ¸É­¸ð½¥Øø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ØáÉ´í½±½ÈéÙÈ ´µÍÑ°¤íµÉ¥¸µÑ½ÀèÀ¸ÉÉ´ùA½Ìèà¸Ó
+Á8¼ÄÐ¸Ë
+Á\ð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌôÉÍÑå±ôÁ¥¹èÅÉ´ø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÙÉ´í½±½ÈéÙÈ ´µÍÑ°¤íÑáÐµÑÉ¹Í½É´éÕÁÁÉÍí±ÑÑÈµÍÁ¥¹èÀ¸Å´íµÉ¥¸µ½ÑÑ½´èÀ¸ÕÉ´ù
+5
+4Qð½¥Øø(ñ¥ØÍÑå±ô½¹ÐµÝ¥¡ÐèÜÀÀí½¹ÐµÍ¥éèÀ¸àáÉ´ùA½ÉÐM½H5½µÍð½¥Øø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÝÉ´í½±½ÈéÙÈ ´µÑ°¤íµÉ¥¸µÑ½ÀèÀ¸ÑÉ´ù
+ÀèÄØË
+À
+ÜY¥ÑÍÍèÄØ¸á­¸ð½¥Øø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ØáÉ´í½±½ÈéÙÈ ´µÍÑ°¤íµÉ¥¸µÑ½ÀèÀ¸ÉÉ´ùA½ÌèÐ¸Ë
+Á8¼ÐÄ¸ã
+Áð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌôÉÍÑå±ôÁ¥¹èÅÉ´ø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÙÉ´í½±½ÈéÙÈ ´µÍÑ°¤íÑáÐµÑÉ¹Í½É´éÕÁÁÉÍí±ÑÑÈµÍÁ¥¹èÀ¸Å´íµÉ¥¸µ½ÑÑ½´èÀ¸ÕÉ´ù=9
+=55%Q59Pð½¥Øø(ñ¥ØÍÑå±ô½¹ÐµÝ¥¡ÐèÜÀÀí½¹ÐµÍ¥éèÀ¸àáÉ´ù)°±¤HA½¥¹Ñµ9½¥Éð½¥Øø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÝÉ´í½±½ÈéÙÈ ´µµÈ¤íµÉ¥¸µÑ½ÀèÀ¸ÑÉ´û^< ÅÕ¤PA½ÉÐA½¥¹Ñµ9½¥Éð½¥Øø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ØáÉ´í½±½ÈéÙÈ ´µÍÑ°¤íµÉ¥¸µÑ½ÀèÀ¸ÉÉ´ùµÉË¤ÁÕ¥ÌÈäµÈ¸ð½¥Øø(ð½¥Øø(ð½¥Øø(ð½¥Øø((ð´´VCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCV@IQLVCV@´´ø(ñ¥Ø±ÍÌôÁ¹°¥ôÁ¹°µÉÑÌø(ñ¥Ø±ÍÌôÁµ¡Èø(ñ¥Ø±ÍÌôÁµÑ¥Ñ±ùÉ¥¡ÐIÑÌð½¥Øø(ñ¥Ø±ÍÌôÁµÍÕÑ¥Ñ±ù%¹¥ÌÍÁ½ÐµÉ£¤PÉ¥¡Ñ½Ì	±Ñ¥%¹à¡	`¤PÄÀÀÉÑÕ¥Ðð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌô±ÉÐ±ÉÐµ¥¹¼ÍÑå±ôµÉ¥¸µ½ÑÑ½´èÄ¸ÕÉ´ø(ñÍÁ¸±ÍÌô±ÉÐµ¥½¸ûäð½ÍÁ¸ø(ñ¥Øù½¹»¥Ì	`è¥¹¥Ì¹¡µÉ¬±½Õàµ¥Ì©½ÕÈ¡½µ¥Éµ¹Ð¸A½ÕÈÌ½ÑÑ¥½¹ÌÁË¥¥ÍÌÍÕÈÉ½ÕÑÌÉ¥ÅÕ°ÕÑ¥±¥ÍÈ°½ÕÑ¥°½ÑÑ¥½¸µ¹Õ±±¤µÍÍ½ÕÌ½Ô½¹ÑÑÈÕ¸É¥¡Ð½ÉÝÉÈÁÉÑ¹¥É¸ð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èø(ñ¥Ø±ÍÌôÉµÑ¥Ñ±ù	`±½°
+½¹Ñ¥¹ÈÉ¥¡Ð%¹àð½¥Øø(ñÍÁ¸±ÍÌôÉµµÉùÉ¥¡Ñ½Ì	`PÉÑÕ¥Ðð½ÍÁ¸ø(ð½¥Øø(ñ¥Ø¥ôàµ±½¥¹ÍÑå±ô¥ÍÁ±äé±àíÀèÀ¸ÜÕÉ´í±àµÝÉÀéÝÉÀø(ñ¥Ø±ÍÌôÍ­±Ñ½¸ÍÑå±ô¡¥¡ÐèäÁÁàíÝ¥Ñ èÄàÁÁàí½ÉÈµÉ¥ÕÌèÑÁàøð½¥Øø(ñ¥Ø±ÍÌôÍ­±Ñ½¸ÍÑå±ô¡¥¡ÐèäÁÁàíÝ¥Ñ èÄàÁÁàí½ÉÈµÉ¥ÕÌèÑÁàøð½¥Øø(ñ¥Ø±ÍÌôÍ­±Ñ½¸ÍÑå±ô¡¥¡ÐèäÁÁàíÝ¥Ñ èÄàÁÁàí½ÉÈµÉ¥ÕÌèÑÁàøð½¥Øø(ñ¥Ø±ÍÌôÍ­±Ñ½¸ÍÑå±ô¡¥¡ÐèäÁÁàíÝ¥Ñ èÄàÁÁàí½ÉÈµÉ¥ÕÌèÑÁàøð½¥Øø(ñ¥Ø±ÍÌôÍ­±Ñ½¸ÍÑå±ô¡¥¡ÐèäÁÁàíÝ¥Ñ èÄàÁÁàí½ÉÈµÉ¥ÕÌèÑÁàøð½¥Øø(ñ¥Ø±ÍÌôÍ­±Ñ½¸ÍÑå±ô¡¥¡ÐèäÁÁàíÝ¥Ñ èÄàÁÁàí½ÉÈµÉ¥ÕÌèÑÁàøð½¥Øø(ð½¥Øø(ñ¥Ø¥ôàµÑÍÑå±ô¥ÍÁ±äé¹½¹ø(ñ¥Ø±ÍÌô¥¹àµÉ¥¥ôàµÉ¥øð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌôÑµÍ½ÕÉÍÑå±ôµÉ¥¸µÑ½ÀèÅÉ´øñ¥Ø±ÍÌôÌµ½Ðøð½¥ØùM½ÕÉèñ¡Éô¡ÑÑÁÌè¼½à¹É¥¡Ñ½Ì¹½´ÑÉÐô}±¹¬ÍÑå±ô½±½ÈéÙÈ ´µ½¸¤ùà¹É¥¡Ñ½Ì¹½´ð½øPÉ¥¡Ñ½Ì	±Ñ¥%¹àP¡½µ¥Éð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èø(ñ¥Ø±ÍÌôÉµÑ¥Ñ±ùÍÑ¥µÑÕÈ¿íÐP
+½ÉÉ¥½ÈÉ¥ÅÕð½¥Øø(ñÍÁ¸±ÍÌôÉµµÉù
+±Õ°±½°ð½ÍÁ¸ø(ð½¥Øø(ñ¥Ø±ÍÌôÉ¥´Èø(ñ¥Øø(ñ¥ØÍÑå±ôµÉ¥¸µ½ÑÑ½´èÅÉ´ø(ñ±°±ÍÌô½É´µ±°ù
+½ÉÉ¥½Èð½±°ø(ñÍ±Ð±ÍÌôÍ±Ðµ¥¹ÁÕÐ¥ôÍÐµÉ½ÕÑÍÑå±ôÝ¥Ñ èÄÀÀ½¹¡¹ô±ÍÑ¥µÑ ¤ø(ñ½ÁÑ¥½¸Ù±Õô©°µ±¥ù)°±¤H1¥ÉÙ¥±±¡½¸¤ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±Õô©°µÁ¹Èù)°±¤HA½¥¹Ñµ9½¥É¡
+½¹¼¤ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±Õô©°µµ½´ù)°±¤H5½µÍ¡-¹å¤ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±Õô¹Ðµ±¥ù¹ÙÉÌH1¥ÉÙ¥±±¡½¸¤ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±Õô¹Ðµµ½´ù¹ÙÉÌH5½µÍ¡-¹å¤ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±Õô¹Ðµ­Èù¹ÙÉÌH­È¡O¥»¥°¤ð½½ÁÑ¥½¸ø(ð½Í±Ðø(ð½¥Øø(ñ¥ØÍÑå±ôµÉ¥¸µ½ÑÑ½´èÅÉ´ø(ñ±°±ÍÌô½É´µ±°ùQåÁ½¹Ñ¹ÕÈð½±°ø(ñÍ±Ð±ÍÌôÍ±Ðµ¥¹ÁÕÐ¥ôÍÐµÑåÁÍÑå±ôÝ¥Ñ èÄÀÀ½¹¡¹ô±ÍÑ¥µÑ ¤ø(ñ½ÁÑ¥½¸Ù±ÕôÈÀøÈÁP¡QT¤ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±ÕôÐÀÍ±ÑøÐÁP¡T¤ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±ÕôÐÁ¡øÐÁ!ð½½ÁÑ¥½¸ø(ñ½ÁÑ¥½¸Ù±ÕôÉÈøÐÁ!IÈð½½ÁÑ¥½¸ø(ð½Í±Ðø(ð½¥Øø(ñ¥Øø(ñ±°±ÍÌô½É´µ±°ù9½µÉÕ¹¥Ó¥Ìð½±°ø(ñ¥¹ÁÕÐ±ÍÌô½É´µ¥¹ÁÕÐÑåÁô¹ÕµÈ¥ôÍÐµÅÑäÙ±ÕôÄµ¥¸ôÄµàôÄÀÀ½¹¥¹ÁÕÐô±ÍÑ¥µÑ ¤ø(ð½¥Øø(ð½¥Øø(ñ¥Ø¥ôÍÑ¥µÑµÉÍÕ±ÐÍÑå±ô­É½Õ¹éÙÈ ´µ¥¹¬¤í½±½ÈéÙÈ ´µÁÁÈ¤íÁ¥¹èÄ¸ÕÉ´í½ÉÈµÉ¥ÕÌèÑÁàø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ØÉÉ´í±ÑÑÈµÍÁ¥¹èÀ¸ÄÕ´íÑáÐµÑÉ¹Í½É´éÕÁÁÉÍí½±½ÈéÉ ÈÐÀ°ÈÌÜ°ÈÌÀ°À¸ÐÔ¤íµÉ¥¸µ½ÑÑ½´èÀ¸ÕÉ´ùÍÑ¥µÑ¥½¸ð½¥Øø(ñ¥Ø¥ôÍÐµÑ½Ñ°ÍÑå±ô½¹ÐµÍ¥éèÈ¸ÕÉ´í½¹ÐµÝ¥¡ÐèàÀÀí±ÑÑÈµÍÁ¥¹è´À¸ÀÑ´ûPð½¥Øø(ñ¥Ø¥ôÍÐµÉ­½Ý¸ÍÑå±ôµÉ¥¸µÑ½ÀèÅÉ´í½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÝÉ´í½±½ÈéÉ ÈÐÀ°ÈÌÜ°ÈÌÀ°À¸Ø¤í±¥¹µ¡¥¡ÐèÄ¸àøð½¥Øø(ñ¥ØÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÙÉ´í½±½ÈéÉ ÈÐÀ°ÈÌÜ°ÈÌÀ°À¸Ì¤íµÉ¥¸µÑ½ÀèÅÉ´ùÍÑ¥µÑ¥½¸¥¹¥Ñ¥Ù
+ÄÈÀ
+Ü!½ÉÌÍÕÉ¡ÉÌð½¥Øø(ð½¥Øø(ð½¥Øø(ð½¥Øø(ð½¥Øø((ð´´VCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCV@I=UQLVCV@´´ø(ñ¥Ø±ÍÌôÁ¹°¥ôÁ¹°µÉ½ÕÑÌø(ñ¥Ø±ÍÌôÁµ¡Èø(ñ¥Ø±ÍÌôÁµÑ¥Ñ±ùI½ÕÑÌÉ¥ÅÕMÕµM¡É¥¹¹ð½¥Øø(ñ¥Ø±ÍÌôÁµÍÕÑ¥Ñ±ù
+½ÉÉ¥½ÉÌQ-aA=IPP½±ÕÉ½ÁÙÉÌÉ¥ÅÕ°=ÕÍÐ°
+¹ÑÉ±°ÍÐð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉ¥´Èø(ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èøñ¥Ø±ÍÌôÉµÑ¥Ñ±ù)°±¤!ÕPÉ¥ÅÕ°=ÕÍÐð½¥Øøð½¥Øø(ñÑ±±ÍÌôÉ¥¡ÐµÑ±ø(ñÑ¡øñÑÈøñÑ ùA½ÉÐð½Ñ øñÑ ùQÉ¹Í¥Ð¡¨¤ð½Ñ øñÑ ù
+½µÁ¹¥Ìð½Ñ øñÑ ùË¥ÅÕ¹ð½Ñ øð½ÑÈøð½Ñ¡ø(ñÑ½äø(ñÑÈøñÑûÂ~³Â~1¥ÉÙ¥±±ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÈÔ´ÌÀð½ÑøñÑù5M°
+5
+4°=9ð½ÑøñÑù!¼¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~£Â~°A½¥¹Ñµ9½¥Éð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÈà´ÌÈð½ÑøñÑù5M°5ÉÍ¬ð½ÑøñÑù!¼¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~ãÂ~Ì­Èð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÄà´ÈÈð½ÑøñÑù
+5
+4°5Mð½ÑøñÑøË\½Í´¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~£Â~¸¥©¸ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÈÀ´ÈÔð½ÑøñÑù5M°!Áµ1±½åð½ÑøñÑù!¼¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~ÏÂ~°1½Ì¡ÁÁ¤ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÈÈ´Èàð½ÑøñÑù5ÉÍ¬°=9°5Mð½ÑøñÑøË\½Í´¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~£Â~È½Õ±ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÈØ´ÌÈð½ÑøñÑù
+5
+4°5Mð½ÑøñÑù!¼¸ð½Ñøð½ÑÈø(ð½Ñ½äø(ð½Ñ±ø(ð½¥Øø(ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èøñ¥Ø±ÍÌôÉµÑ¥Ñ±ù)°±¤!ÕPÉ¥ÅÕ°ÍÐð½¥Øøð½¥Øø(ñÑ±±ÍÌôÉ¥¡ÐµÑ±ø(ñÑ¡øñÑÈøñÑ ùA½ÉÐð½Ñ øñÑ ùQÉ¹Í¥Ð¡¨¤ð½Ñ øñÑ ù
+½µÁ¹¥Ìð½Ñ øñÑ ùË¥ÅÕ¹ð½Ñ øð½ÑÈøð½Ñ¡ø(ñÑ½äø(ñÑÈøñÑûÂ~ÃÂ~¨5½µÍð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÄÈ´ÄØð½ÑøñÑù5ÉÍ¬°5M°=9ð½ÑøñÑøÏ\½Í´¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~çÂ~üÈÌM±´ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÄÐ´Äàð½ÑøñÑù
+5
+4°5Mð½ÑøñÑù!¼¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~ËÂ~ü5ÁÕÑ¼ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÄà´ÈÈð½ÑøñÑù5M°5ÉÍ¬ð½ÑøñÑù!¼¸ð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~ËÂ~°QµÑÙð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÄØ´ÈÀð½ÑøñÑù
+5
+4ð½ÑøñÑøË\½µ½¥Ìð½Ñøð½ÑÈø(ñÑÈøñÑûÂ~«Â~ä©¥½ÕÑ¤ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÔ´Üð½ÑøñÑù5ÉÍ¬°5M°A%0ð½ÑøñÑøÏ\½Í´¸ð½Ñøð½ÑÈø(ð½Ñ½äø(ð½Ñ±ø(ð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉÍÑå±ôµÉ¥¸µÑ½ÀèÀø(ñ¥Ø±ÍÌôÉµ¡Èøñ¥Ø±ÍÌôÉµÑ¥Ñ±ù¹ÙÉÌ¼ÕÉ½ÁPÉ¥ÅÕð½¥Øøð½¥Øø(ñÑ±±ÍÌôÉ¥¡ÐµÑ±ø(ñÑ¡øñÑÈøñÑ ù=É¥¥¹HA½ÉÐð½Ñ øñÑ ùQÉ¹Í¥Ð¡¨¤ð½Ñ øñÑ ù
+½µÁ¹¥Ìð½Ñ øñÑ ù9½ÑÌð½Ñ øð½ÑÈøð½Ñ¡ø(ñÑ½äø(ñÑÈøñÑ±ÍÌôÉ½ÕÑµûÂ~Â~¨¹ÙÉÌHÂ~³Â~1¥ÉÙ¥±±ð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÈÄ´ÈÔð½ÑøñÑù
+5
+4°5Mð½ÑøñÑÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÜÉÉ´ùY¥±¥Í¥ÉÌð½Ñøð½ÑÈø(ñÑÈøñÑ±ÍÌôÉ½ÕÑµûÂ~Â~¨¹ÙÉÌHÂ~ÃÂ~¨5½µÍð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÄà´ÈÈð½ÑøñÑù5ÉÍ¬°5M°=9ð½ÑøñÑÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÜÉÉ´ùY¥A½ÉÐM½ð½Ñøð½ÑÈø(ñÑÈøñÑ±ÍÌôÉ½ÕÑµûÂ~¯Â~Ü1!ÙÉHÂ~£Â~°A½¥¹Ñµ9½¥Éð½ÑøñÑ±ÍÌôÉÑµÙ±ÕøÈÀ´ÈÐð½ÑøñÑù
+5
+4ð½ÑøñÑÍÑå±ô½¹Ðµµ¥±äéÙÈ ´µµ½¹¼¤í½¹ÐµÍ¥éèÀ¸ÜÉÉ´ùMÉÙ¥¥ÉÐð½Ñøð½ÑÈø(ð½Ñ½äø(ð½Ñ±ø(ð½¥Øø(ð½¥Øø((ð´´VCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCVCV@=
+U59QLVCV@´´ø(ñ¥Ø±ÍÌôÁ¹°¥ôÁ¹°µ½Õµ¹ÑÌø(ñ¥Ø±ÍÌôÁµ¡Èø(ñ¥Ø±ÍÌôÁµÑ¥Ñ±ù½Õµ¹ÑÌð½¥Øø(ñ¥Ø±ÍÌôÁµÍÕÑ¥Ñ±ù½0°A­¥¹1¥ÍÑÌ°
+ÉÑ¥¥ÑÌ°
+ÕÍÑ½µÌPÁÈáÃ¥¥Ñ¥½¸ð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉ¥´Èø(ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èø(ñ¥Ø±ÍÌôÉµÑ¥Ñ±ù5M-TÜÐÈÄÌàÐP)°±¤H1¥ÉÙ¥±±ð½¥Øø(ñÕÑÑ½¸±ÍÌôÑ¸µÍ½¹Éä½¹±¥¬ô½Õµ¹Ð¹Ñ±µ¹Ñ	å% µ½°µÕÁ±½¤¹±ÍÍ1¥ÍÐ¹ ½Á¸¤ø¬UÁ±½ð½ÕÑÑ½¸ø(ð½¥Øø(ñ¥Ø±ÍÌô½µ±¥ÍÐø(ñ¥Ø±ÍÌô½µ¥Ñ´ø(ñ¥Ø±ÍÌô½µ¥½¸ÁûÂ~Nð½¥Øø(ñ¥Ø±ÍÌô½µµÑø(ñ¥Ø±ÍÌô½µ¹µù	¥±°½1¥¹P5Mµ5U\ÄÈÌÐÔØð½¥Øø(ñ¥Ø±ÍÌô½µ¥¹¼ùA
+ÜàÐÈ-
+Ü©½ÕÓ¤±ÄÔµÉÌÈÀÈØð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌô½µÑ¥½¹Ìø(ñÕÑÑ½¸±ÍÌôÑ¸µÍ½¹ÉäÍÑå±ôÁ¥¹èÀ¸ÍÉ´À¸ÝÉ´í½¹ÐµÍ¥éèÀ¸ÝÉ´ùY½¥Èð½ÕÑÑ½¸ø(ð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌô½µ¥Ñ´ø(ñ¥Ø±ÍÌô½µ¥½¸ÁûÂ~Nð½¥Øø(ñ¥Ø±ÍÌô½µµÑø(ñ¥Ø±ÍÌô½µ¹µùA­¥¹1¥ÍÐPA0µQ-a@´ÈÀÈØ´ÀÐÜð½¥Øø(ñ¥Ø±ÍÌô½µ¥¹¼ùA
+ÜÈÌÐ-
+Ü©½ÕÓ¤±ÄÐµÉÌÈÀÈØð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌô½µÑ¥½¹Ìø(ñÕÑÑ½¸±ÍÌôÑ¸µÍ½¹ÉäÍÑå±ôÁ¥¹èÀ¸ÍÉ´À¸ÝÉ´í½¹ÐµÍ¥éèÀ¸ÝÉ´ùY½¥Èð½ÕÑÑ½¸ø(ð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌô½µ¥Ñ´ø(ñ¥Ø±ÍÌô½µ¥½¸¥µûÂ~Zðð½¥Øø(ñ¥Ø±ÍÌô½µµÑø(ñ¥Ø±ÍÌô½µ¹µùA¡½Ñ½Ì¡Éµ¹Ð½¹Ñ¹ÕÈð½¥Øø(ñ¥Ø±ÍÌô½µ¥¹¼ù)A
+ÜÌ¥¡¥ÉÌ
+Ü©½ÕÓ¤±ÄØµÉÌÈÀÈØð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌô½µÑ¥½¹Ìø(ñÕÑÑ½¸±ÍÌôÑ¸µÍ½¹ÉäÍÑå±ôÁ¥¹èÀ¸ÍÉ´À¸ÝÉ´í½¹ÐµÍ¥éèÀ¸ÝÉ´ùY½¥Èð½ÕÑÑ½¸ø(ð½¥Øø(ð½¥Øø(ð½¥Øø(ð½¥Øø((ñ¥Ø±ÍÌôÉø(ñ¥Ø±ÍÌôÉµ¡Èø(ñ¥Ø±ÍÌôÉµÑ¥Ñ±ù
+5TÌÌàÜØÄÈP¹ÙÉÌH5½µÍð½¥Øø(ñÕÑÑ½¸±ÍÌôÑ¸µÍ½¹Éä½¹±¥¬ô½Õµ¹Ð¹Ñ±µ¹Ñ	å% µ½°µÕÁ±½¤¹±ÍÍ1¥ÍÐ¹ ½Á¸¤ø¬UÁ±½ð½ÕÑÑ½¸ø(ð½¥Øø(ñ¥Ø±ÍÌô½µ±¥ÍÐø(ñ¥Ø±ÍÌô½µ¥Ñ´ø(ñ¥Ø±ÍÌô½µ¥½¸ÁûÂ~Nð½¥Øø(ñ¥Ø±ÍÌô½µµÑø(ñ¥Ø±ÍÌô½µ¹µù	¥±°½1¥¹P
+5Tµ5L´ÈÀÈØ´àäð½¥Øø(ñ¥Ø±ÍÌô½µ¥¹¼ùA
+ÜÄ¸È5
+Ü©½ÕÓ¤±àµÉÌÈÀÈØð½¥Øø(ð½¥Øø(ñ¥Ø±Ìô½µÑ¥½¹Ìø(ñÕÑÑ½¸±ÍÌôÑ¸µÍ½¹ÉäÍÑå±ôÁ¥¹èÀ¸ÍÉ´À¸ÝÉ´í½¹ÐµÍ¥éèÀ¸ÝÉ´ùY½¥Èð½ÕÑÑ½¸ø(ð½¥Øø(ð½¥Øø(ñ¥Ø±ÍÌô½µ¥Ñ´ø(ñ¥Ø±ÍÌô½µ¥½¸ pdf">ð</div>
+              <div class="doc-meta">
+                <div class="doc-name">Certificat d'origine EUR.1</div>
+                <div class="doc-info">PDF Â· 156 KB Â· AjoutÃ© le 7 mars 2026</div>
+              </div>
+              <div class="doc-actions">
+                <button class="btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.7rem">Voir</button>
+              </div>
+            </div>
+          </div>
+          <div class="alert alert-warn" style="margin-top:0.75rem">
+            <span class="alert-icon">â </span>
+            <div>Certificat phytosanitaire manquant â requis pour dÃ©douanement Kenya</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ââââââââââââââââââââââââââââââââââ ALERTS ââ -->
+    <div class="panel" id="panel-alerts">
+      <div class="page-header">
+        <div class="page-title">Alertes & Notifications</div>
+        <div class="page-subtitle">Suivi proactif â DÃ©murrage, retards, expirations</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Alertes actives</div>
+          <span class="card-badge" style="background:rgba(196,75,43,0.1);color:var(--rust);border:1px solid rgba(196,75,43,0.25)">2 urgentes</span>
+        </div>
+
+        <div class="alert alert-warn" style="border-left:3px solid var(--rust)">
+          <span class="alert-icon">ð´</span>
+          <div>
+            <strong>DÃMURRAGE IMMINENT â OOLU4589023</strong><br>
+            <span style="font-family:var(--mono);font-size:0.72rem">Pointe-Noire Â· PÃ©riode gratuite expire le <strong>5 avr. 2026</strong> (4 jours) Â· CoÃ»t estimÃ© : $120/j aprÃ¨s expiration</span>
+          </div>
+        </div>
+
+        <div class="alert alert-warn">
+          <span class="alert-icon">ð¡</span>
+          <div>
+            <strong>RETARD DOUANE â CMAU3387612</strong><br>
+            <span style="font-family:var(--mono);font-size:0.72rem">Mombasa Â· Retard estimÃ© +72h Â· Document manquant : certificat phytosanitaire</span>
+          </div>
+        </div>
+
+        <div class="alert alert-info">
+          <span class="alert-icon">ðµ</span>
+          <div>
+            <strong>CONGESTION PORT â Dakar</strong><br>
+            <span style="font-family:var(--mono);font-size:0.72rem">DÃ©lai d'attente estimÃ© +2j Â· Impact sur MSKU7421384 Â· Nouveau ETA : 16 avr. 2026</span>
+          </div>
+        </div>
+
+        <div class="alert alert-success">
+          <span class="alert-icon">ð¢</span>
+          <div>
+            <strong>ARRIVÃE CONFIRMÃE â OOLU4589023</strong><br>
+            <span style="font-family:var(--mono);font-size:0.72rem">Pointe-Noire Â· DÃ©chargÃ© le 29 mars 2026 Â· Notification client envoyÃ©e</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Configurer une alerte</div>
+        </div>
+        <div class="grid-2">
+          <div style="display:flex;flex-direction:column;gap:0.85rem">
+            <div>
+              <label class="form-label">RÃ©fÃ©rence conteneur</label>
+              <input class="form-input" type="text" placeholder="Ex: MSKU7421384">
+            </div>
+            <div>
+              <label class="form-label">Type d'alerte</label>
+              <select class="select-input" style="width:100%">
+                <option>DÃ©murrage (J-7, J-3, J-1)</option>
+                <option>ArrivÃ©e Ã  port</option>
+                <option>Changement de statut</option>
+                <option>Retard > 24h</option>
+                <option>Document manquant</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Notification par</label>
+              <select class="select-input" style="width:100%">
+                <option>Email</option>
+                <option>Dans l'app uniquement</option>
+              </select>
+            </div>
+            <button class="btn-primary">CrÃ©er l'alerte</button>
+          </div>
+          <div style="background:var(--mist);padding:1.25rem;border-radius:4px">
+            <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--steel);margin-bottom:0.75rem">Alertes configurÃ©es</div>
+            <div style="font-size:0.82rem;line-height:2">
+              â MSKU7421384 â ArrivÃ©e port<br>
+              â CMAU3387612 â DÃ©murrage J-7<br>
+              â OOLU4589023 â DÃ©murrage J-3, J-1<br>
+              <span style="color:var(--steel);font-family:var(--mono);font-size:0.68rem">Email : ops@tkxport.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ââââââââââââââââââââââââââââââââââ API KEYS ââ -->
+    <div class="panel" id="panel-apikeys">
+      <div class="page-header">
+        <div class="page-title">Configuration API</div>
+        <div class="page-subtitle">Connecter les sources de donnÃ©es â Gratuit en prioritÃ©</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Shipsgo â Container Tracking</div>
+          <span class="card-badge badge-api">Payant â $2/tracking</span>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <label class="form-label">ClÃ© API Shipsgo</label>
+            <input class="form-input" type="password" id="key-shipsgo" placeholder="sk_live_xxxxxxxxxxxxxxxx">
+          </div>
+          <button class="btn-primary" onclick="saveKey('shipsgo')">Sauvegarder</button>
+          <a href="https://shipsgo.com" target="_blank" class="btn-secondary">Obtenir une clÃ© â</a>
+        </div>
+        <div class="data-source" style="margin-top:0.75rem"><div class="ds-dot" style="background:var(--amber)"></div>3 trackings gratuits Ã  l'inscription Â· 500 crÃ©dits = $1.000 Â· Valides 1 an</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Freightos FBX â Freight Index</div>
+          <span class="card-badge badge-free">100% Gratuit</span>
+        </div>
+        <div class="alert alert-success">
+          <span class="alert-icon">â</span>
+          <div>Freightos Baltic Index (FBX) est accessible publiquement sans clÃ© API. Les donnÃ©es sont automatiquement chargÃ©es dans l'app.</div>
+        </div>
+        <div class="data-source"><div class="ds-dot"></div><a href="https://fbx.freightos.com" target="_blank" style="color:var(--ocean)">fbx.freightos.com</a> â Index hebdomadaire 12 routes mondiales</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">MarineTraffic â Vessel Tracking</div>
+          <span class="card-badge badge-free">Embed gratuit</span>
+        </div>
+        <div class="alert alert-success">
+          <span class="alert-icon">â</span>
+          <div>Carte AIS intÃ©grÃ©e via embed public MarineTraffic. Positions diffÃ©rÃ©es 2-6h. Aucune clÃ© requise.</div>
+        </div>
+        <div style="margin-top:0.75rem">
+          <label class="form-label">ClÃ© API MarineTraffic (optionnel â positions temps rÃ©el)</label>
+          <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap">
+            <input class="form-input" type="password" id="key-mt" placeholder="ClÃ© API MarineTraffic (plan payant)" style="flex:1">
+            <button class="btn-primary" onclick="saveKey('marinetraffic')">Sauvegarder</button>
+            <a href="https://www.marinetraffic.com/en/p/api-services" target="_blank" class="btn-secondary">Voir les plans â</a>
+          </div>
+        </div>
+        <div class="data-source" style="margin-top:0.75rem"><div class="ds-dot" style="background:var(--amber)"></div>Plan Basic ~$50-80/mois pour positions temps rÃ©el</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">RÃ©sumÃ© des coÃ»ts API</div>
+        </div>
+        <table class="freight-table">
+          <thead><tr><th>Service</th><th>Usage</th><th>CoÃ»t/mois</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Freightos FBX</strong></td>
+              <td style="font-family:var(--mono);font-size:0.72rem">Index spot global</td>
+              <td class="rate-value" style="color:var(--teal)">$0</td>
+              <td><span class="status-pill status-arrived">Actif</span></td>
+            </tr>
+            <tr>
+              <td><strong>MarineTraffic Embed</strong></td>
+              <td style="font-family:var(--mono);font-size:0.72rem">Carte AIS diffÃ©rÃ©e</td>
+              <td class="rate-value" style="color:var(--teal)">$0</td>
+              <td><span class="status-pill status-arrived">Actif</span></td>
+            </tr>
+            <tr>
+              <td><strong>Shipsgo Tracking</strong></td>
+              <td style="font-family:var(--mono);font-size:0.72rem">50 conteneurs/mois</td>
+              <td class="rate-value">~$100</td>
+              <td><span class="status-pill status-customs">ClÃ© requise</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- âââ MODALS âââ -->
+<div class="modal-overlay" id="modal-add-container">
+  <div class="modal-box">
+    <div class="modal-title">Ajouter un conteneur</div>
+    <div class="modal-sub">Tracking manuel ou via Shipsgo API</div>
+    <div class="modal-form">
+      <div>
+        <label class="form-label">NumÃ©ro de conteneur / B/L</label>
+        <input class="form-input" type="text" placeholder="Ex: MSKU7421384" style="text-transform:uppercase">
+      </div>
+      <div>
+        <label class="form-label">Compagnie maritime</label>
+        <select class="form-input">
+          <option>MSC</option><option>Maersk</option><option>CMA CGM</option>
+          <option>ONE</option><option>Hapag-Lloyd</option><option>COSCO</option>
+          <option>ZIM</option><option>PIL</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="grid-2" style="gap:0.75rem">
+        <div>
+          <label class="form-label">Port d'origine</label>
+          <input class="form-input" type="text" placeholder="Ex: Jebel Ali">
+        </div>
+        <div>
+          <label class="form-label">Port de destination</label>
+          <input class="form-input" type="text" placeholder="Ex: Libreville">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-close" onclick="document.getElementById('modal-add-container').classList.remove('open')">Annuler</button>
+      <button class="btn-primary" onclick="document.getElementById('modal-add-container').classList.remove('open')">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-roro">
+  <div class="modal-box">
+    <div class="modal-title">Nouvelle expÃ©dition RoRo</div>
+    <div class="modal-sub">Fret roulant â vÃ©hicules, engins, Ã©quipements</div>
+    <div class="modal-form">
+      <div>
+        <label class="form-label">Compagnie RoRo</label>
+        <select class="form-input">
+          <option>Wallenius Wilhelmsen</option><option>EUKOR</option>
+          <option>MOL</option><option>NYK</option><option>Grimaldi</option>
+        </select>
+      </div>
+      <div class="grid-2" style="gap:0.75rem">
+        <div>
+          <label class="form-label">Port d'embarquement</label>
+          <input class="form-input" placeholder="Ex: Jebel Ali">
+        </div>
+        <div>
+          <label class="form-label">Port de destination</label>
+          <input class="form-input" placeholder="Ex: Libreville">
+        </div>
+      </div>
+      <div class="grid-2" style="gap:0.75rem">
+        <div>
+          <label class="form-label">Nb. d'unitÃ©s</label>
+          <input class="form-input" type="number" value="1">
+        </div>
+        <div>
+          <label class="form-label">Type de vÃ©hicule</label>
+          <input class="form-input" placeholder="Ex: Bus 11m Ashok Leyland">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-close" onclick="document.getElementById('modal-add-roro').classList.remove('open')">Annuler</button>
+      <button class="btn-primary" onclick="document.getElementById('modal-add-roro').classList.remove('open')">CrÃ©er</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-upload">
+  <div class="modal-box">
+    <div class="modal-title">Uploader un document</div>
+    <div class="modal-sub">PDF, JPG, PNG, DOCX â max 10 MB</div>
+    <div style="border:2px dashed rgba(10,14,26,0.2);border-radius:4px;padding:2.5rem;text-align:center;margin:1rem 0;cursor:pointer;background:var(--mist)" onclick="this.querySelector('input').click()">
+      <div style="font-size:2rem;margin-bottom:0.5rem">ð</div>
+      <div style="font-weight:600;margin-bottom:0.3rem">Glisser-dÃ©poser ou cliquer</div>
+      <div style="font-family:var(--mono);font-size:0.68rem;color:var(--steel)">PDF, JPG, PNG, DOCX</div>
+      <input type="file" style="display:none" accept=".pdf,.jpg,.png,.docx">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-close" onclick="document.getElementById('modal-upload').classList.remove('open')">Fermer</button>
+      <button class="btn-primary" onclick="document.getElementById('modal-upload').classList.remove('open')">Uploader</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// âââ NAVIGATION âââ
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + name + "'")) {
+      n.classList.add('active');
+    }
+  });
+  // Lazy load
+  if (name === 'rates') loadFBX();
+  if (name === 'dashboard') loadFBXMini();
+}
+
+// âââ CLOCK âââ
+function updateClock() {
+  const now = new Date();
+  const utc = now.toUTCString().split(' ');
+  document.getElementById('clock').textContent =
+    now.toISOString().substr(11,5) + ' UTC';
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// âââ FBX DATA (Freightos Baltic Index â donnÃ©es publiques hebdo) âââ
+const FBX_DATA = [
+  { route: 'FBX01 â Chine â N-Europe',    rate: 2184,  chg: -4.2 },
+  { route: 'FBX02 â Chine â MÃ©diterranÃ©e',rate: 2310,  chg: -2.8 },
+  { route: 'FBX03 â Chine â USA O.',      rate: 2850,  chg: +1.1 },
+  { route: 'FBX04 â Chine â USA E.',      rate: 3640,  chg: +0.8 },
+  { route: 'FBX11 â N-Europe â Chine',    rate: 510,   chg: -1.5 },
+  { route: 'FBX13 â USA â N-Europe',      rate: 630,   chg: +2.3 },
+  { route: 'FBX Global Index',            rate: 2428,  chg: -1.9 },
+];
+
+function loadFBX() {
+  setTimeout(() => {
+    document.getElementById('fbx-loading').style.display = 'none';
+    document.getElementById('fbx-data').style.display = 'block';
+    const grid = document.getElementById('fbx-grid');
+    grid.innerHTML = '';
+    FBX_DATA.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'index-card';
+      const chgCls = d.chg > 0 ? 'up' : 'down';
+      const chgStr = d.chg > 0 ? 'â² +' + d.chg + '%' : 'â¼ ' + d.chg + '%';
+      card.innerHTML = `
+        <div class="index-route">${d.route}</div>
+        <div class="index-rate">$${d.rate.toLocaleString('fr-FR')} <span class="index-unit">/ FEU</span></div>
+        <div class="index-change ${chgCls}">${chgStr} sem.</div>`;
+      grid.appendChild(card);
+    });
+    // Update KPI
+    document.getElementById('kpi-fbx').textContent = '$' + (2428).toLocaleString('fr-FR');
+    document.getElementById('kpi-fbx-d').innerHTML = '<span class="down">â¼ -1.9% cette semaine</span>';
+  }, 1200);
+}
+
+function loadFBXMini() {
+  document.getElementById('kpi-containers').textContent = '3';
+  document.getElementById('kpi-containers-d').textContent = '2 actifs Â· 1 arrivÃ©';
+  document.getElementById('kpi-vessels').textContent = '2';
+  document.getElementById('kpi-fbx').textContent = '$2 428';
+  document.getElementById('kpi-fbx-d').innerHTML = '<span class="down">â¼ -1.9% sem.</span>';
+
+  setTimeout(() => {
+    document.getElementById('fbx-mini-loading').style.display = 'none';
+    document.getElementById('fbx-mini-data').style.display = 'block';
+    const tbody = document.getElementById('fbx-mini-tbody');
+    const mini = FBX_DATA.slice(0, 5);
+    tbody.innerHTML = mini.map(d => {
+      const chgCls = d.chg > 0 ? 'trend-up' : 'trend-down';
+      const chgStr = d.chg > 0 ? 'â² +' + d.chg + '%' : 'â¼ ' + d.chg + '%';
+      return `<tr><td>${d.route.split(' â ')[0]}<br><span style="font-family:var(--mono);font-size:0.65rem;color:var(--steel)">${d.route.split(' â ')[1]||''}</span></td><td class="rate-value">$${d.rate.toLocaleString('fr-FR')}</td><td class="${chgCls}" style="font-family:var(--mono);font-size:0.72rem">${chgStr}</td></tr>`;
+    }).join('');
+  }, 1000);
+}
+
+// âââ ESTIMATE âââ
+const ROUTES = {
+  'jal-lib': { name:'Jebel Ali â Libreville', base20:1800, base40:2400, days:28 },
+  'jal-pnr': { name:'Jebel Ali â Pointe-Noire', base20:1900, base40:2500, days:30 },
+  'jal-mom': { name:'Jebel Ali â Mombasa', base20:1200, base40:1600, days:14 },
+  'ant-lib': { name:'Anvers â Libreville', base20:2200, base40:2900, days:22 },
+  'ant-mom': { name:'Anvers â Mombasa', base20:1800, base40:2400, days:20 },
+  'ant-dkr': { name:'Anvers â Dakar', base20:1400, base40:1900, days:15 },
+};
+function calcEstimate() {
+  const rk = document.getElementById('est-route').value;
+  const tk = document.getElementById('est-type').value;
+  const qty = parseInt(document.getElementById('est-qty').value) || 1;
+  const r = ROUTES[rk];
+  let base = (tk === '20') ? r.base20 : r.base40;
+  if (tk === 'reefer') base = Math.round(base * 1.8);
+  const surcharge = Math.round(base * 0.12);
+  const total = (base + surcharge) * qty;
+  document.getElementById('est-total').textContent = '$' + total.toLocaleString('fr-FR');
+  document.getElementById('est-breakdown').innerHTML =
+    `Fret de base : $${base.toLocaleString('fr-FR')}/unitÃ©<br>` +
+    `Surcharges estimÃ©es (~12%) : $${surcharge.toLocaleString('fr-FR')}/unitÃ©<br>` +
+    `QuantitÃ© : ${qty} Ã ${tk.toUpperCase()}<br>` +
+    `Transit estimÃ© : ${r.days} jours`;
+}
+
+// âââ TRACKING DEMO âââ
+function doTrack() {
+  const num = document.getElementById('track-number').value.trim().toUpperCase();
+  const res = document.getElementById('track-result');
+  if (!num) return;
+  res.innerHTML = `<div class="skeleton" style="height:80px;border-radius:4px;margin-bottom:0.5rem"></div>`;
+  setTimeout(() => {
+    const knownContainers = {
+      'MSKU7421384': { carrier:'MSC', origin:'Jebel Ali', dest:'Libreville', status:'transit', eta:'14 avr. 2026', vessel:'MSC AMSTERDAM' },
+      'CMAU3387612': { carrier:'CMA CGM', origin:'Anvers', dest:'Mombasa', status:'customs', eta:'30 mar. 2026', vessel:'CMA CGM TAGE' },
+      'OOLU4589023': { carrier:'ONE', origin:'Jebel Ali', dest:'Pointe-Noire', status:'arrived', eta:'29 mar. 2026', vessel:'ONE COMMITMENT' },
+    };
+    if (knownContainers[num]) {
+      const c = knownContainers[num];
+      const statusLabel = {transit:'En transit',customs:'DÃ©douanement',arrived:'ArrivÃ©'}[c.status];
+      const statusCls = 'status-' + c.status;
+      res.innerHTML = `
+        <div class="shipment-card">
+          <div class="shipment-header">
+            <div><div class="shipment-ref">${num}</div><div class="shipment-carrier">${c.carrier} Â· ${c.vessel}</div></div>
+            <span class="status-pill ${statusCls}">${statusLabel}</span>
+          </div>
+          <div class="shipment-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;font-family:var(--mono);font-size:0.75rem">
+              <div><div style="color:var(--steel);margin-bottom:2px">Origine</div><strong>${c.origin}</strong></div>
+              <div><div style="color:var(--steel);margin-bottom:2px">Destination</div><strong>${c.dest}</strong></div>
+              <div><div style="color:var(--steel);margin-bottom:2px">ETA</div><strong>${c.eta}</strong></div>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      res.innerHTML = `<div class="alert alert-info"><span class="alert-icon">â¹</span><div>Conteneur <strong>${num}</strong> non trouvÃ© dans la dÃ©mo. Connecter une clÃ© API Shipsgo pour le tracking en temps rÃ©el de 160+ compagnies.</div></div>`;
+    }
+  }, 1200);
+}
+
+// âââ SAVE KEY âââ
+function saveKey(provider) {
+  const keyId = provider === 'shipsgo' ? 'key-shipsgo' : 'key-mt';
+  const val = document.getElementById(keyId).value;
+  if (val) {
+    localStorage.setItem('api_' + provider, val);
+    alert('â ClÃ© ' + provider + ' sauvegardÃ©e localement.');
+  }
+}
+
+// âââ INIT âââ
+window.addEventListener('load', () => {
+  loadFBXMini();
+  calcEstimate();
+  // Restore keys
+  ['shipsgo', 'marinetraffic'].forEach(p => {
+    const saved = localStorage.getItem('api_' + p);
+    if (saved) {
+      const el = document.getElementById('key-' + (p === 'marinetraffic' ? 'mt' : p));
+      if (el) el.value = saved;
+    }
+  });
+});
+</script>
+</body>
+</html>
